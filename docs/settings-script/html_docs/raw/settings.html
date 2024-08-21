@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Configure Kibana | Kibana Guide | Elastic</title>
+<meta class="elastic" name="content" content="Configure Kibana | Kibana Guide">
+
+<link rel="home" href="index.html" title="Kibana Guide"/>
+<link rel="up" href="setup.html" title="Set up"/>
+<link rel="prev" href="docker.html" title="Install Kibana with Docker"/>
+<link rel="next" href="alert-action-settings-kb.html" title="Alerting and action settings in Kibana"/>
+<meta class="elastic" name="product_version" content=""/>
+<meta class="elastic" name="product_name" content=""/>
+<meta class="elastic" name="website_area" content="documentation"/>
+<meta name="DC.type" content="Learn/Docs/"/>
+<meta name="DC.subject" content=""/>
+<meta name="DC.identifier" content=""/>
+</head>
+<body>
+<div class="navheader">
+<span class="prev">
+<a href="docker.html">« Install Kibana with Docker</a>
+</span>
+<span class="next">
+<a href="alert-action-settings-kb.html">Alerting and action settings in Kibana »</a>
+</span>
+</div>
+<div class="book" lang="en">
+<div class="titlepage">
+<div class="breadcrumbs">
+<span class="breadcrumb-link"><a href="/guide/">Elastic Docs</a></span>
+<span class="chevron-right">›</span><span class="breadcrumb-link"><a href="index.html">Kibana Guide</a></span>
+<span class="chevron-right">›</span><span class="breadcrumb-link"><a href="setup.html">Set up</a></span>
+</div>
+<div>
+<div><h1 class="title"><a id="id-1"></a>Configure Kibana</h1><a class="edit_me" rel="nofollow" title="Edit this page on GitHub" href="https://github.com/elastic/kibana/edit/master/docs/setup/settings.asciidoc">edit</a></div>
+</div>
+<!--EXTRA-->
+</div>
+<div id="content">
+<div class="chapter">
+<div class="titlepage"><div><div>
+<h2 class="title"><a id="settings"></a>Configure Kibana<a class="edit_me" rel="nofollow" title="Edit this page on GitHub" href="https://github.com/elastic/kibana/edit/master/docs/setup/settings.asciidoc">edit</a></h2>
+</div></div></div>
+<p>The Kibana server reads properties from the <code class="literal">kibana.yml</code> file on startup. The
+location of this file differs depending on how you installed Kibana. For example,
+if you installed Kibana from an archive distribution (<code class="literal">.tar.gz</code> or <code class="literal">.zip</code>), by
+default it is in <code class="literal">$KIBANA_HOME/config</code>. By default, with package distributions
+(Debian or RPM), it is in <code class="literal">/etc/kibana</code>.  The config directory can be changed via the
+<code class="literal">KBN_PATH_CONF</code> environment variable:</p>
+<div class="pre_wrapper lang-text">
+<div class="console_code_copy" title="Copy to clipboard"></div>
+<pre class="programlisting prettyprint lang-text">KBN_PATH_CONF=/home/kibana/config ./bin/kibana</pre>
+</div>
+<p>The default host and port settings configure Kibana to run on <code class="literal">localhost:5601</code>. To change this behavior and allow remote users to connect, you&#8217;ll need to update your <code class="literal">kibana.yml</code> file. You can also enable SSL and set a
+variety of other options.</p>
+<p>Environment variables can be injected into configuration using <code class="literal">${MY_ENV_VAR}</code> syntax. By default, configuration validation
+will fail if an environment variable used in the config file is not present when Kibana starts. This behavior can be changed by using a default value
+for the environment variable, using the <code class="literal">${MY_ENV_VAR:defaultValue}</code> syntax.</p>
+<div class="variablelist">
+<dl class="variablelist">
+<dt>
+<span class="term">
+<code class="literal">console.ui.enabled</code>
+</span>
+</dt>
+<dd>
+<p>
+Toggling this causes the server to regenerate assets on the next startup, which may cause a delay before pages start being served. Set to <code class="literal">false</code> to disable Console.
+</p>
+<p>Options: <code class="literal">yes</code>, <code class="literal">no</code>, <code class="literal">maybe</code></p>
+<p>Default: <code class="literal">true</code></p>
+<p>Platforms: <code class="literal">Self-managed</code></p>
+<p>Type: static</p>
+</dd>
+<dt>
+<span class="term">
+<code class="literal">csp.script_src</code>
+</span>
+</dt>
+<dd>
+<p>
+Add sources for the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/script-src" class="ulink" target="_top">Content Security Policy <code class="literal">script-src</code> directive</a>.
+</p>
+<p>Options: <code class="literal">option4</code>, <code class="literal">option5</code>, <code class="literal">option6</code></p>
+<p>Platforms: <code class="literal">Self-managed</code>, <code class="literal">Elastic serverless</code></p>
+<p>Type: static</p>
+</dd>
+<dt>
+<span class="term">
+<code class="literal">csp.disableUnsafeEval</code>
+</span>
+</dt>
+<dd>
+<p>
+<span class="Admonishment Admonishment--change">
+[<span class="Admonishment-version u-mono u-strikethrough">8.7.0</span>]
+<span class="Admonishment-detail">
+Deprecated in 8.7.0. Use <code class="literal">csp.script_src: ['unsafe-eval']</code> instead if you wish to enable <code class="literal">unsafe-eval</code>. This config option will have no effect in a future version.
+</span>
+</span> Set this to <code class="literal">false</code> to add the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/script-src#unsafe_eval_expressions" class="ulink" target="_top"><code class="literal">unsafe-eval</code></a> source expression to the <code class="literal">script-src</code> directive.
+</p>
+<p>When <code class="literal">csp.disableUnsafeEval</code> is set to <code class="literal">true</code>, Kibana will use a custom version of the Handlebars template library. Handlebars is used in various locations in the Kibana frontend where custom templates can be supplied by the user when for instance setting up a visualisation. If you experience any issues rendering Handlebars templates, please set this setting to <code class="literal">false</code> and <a href="https://github.com/elastic/kibana/issues/new/choose" class="ulink" target="_top">open an issue</a> in the Kibana GitHub repository.</p>
+<p>Options: <code class="literal">option7</code>, <code class="literal">option8</code>, <code class="literal">option9</code></p>
+<p>Default: <code class="literal">true</code></p>
+<p>Platforms: <code class="literal">Self-managed</code>, <code class="literal">Elastic Cloud</code></p>
+<p>Type: static</p>
+</dd>
+<dt>
+<span class="term">
+<code class="literal">csp.worker_src</code>
+</span>
+</dt>
+<dd>
+<p>
+Add sources for the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/worker-src" class="ulink" target="_top">Content Security Policy <code class="literal">worker-src</code> directive</a>.
+</p>
+<p>Options: <code class="literal">option7</code>, <code class="literal">option8</code>, <code class="literal">option9</code></p>
+<p>Default: <code class="literal">maybe</code></p>
+<p>Platforms: <code class="literal">Self-managed</code>, <code class="literal">Elastic serverless</code></p>
+<p>Type: static</p>
+</dd>
+<dt>
+<span class="term">
+<code class="literal">csp.style_src</code>
+</span>
+</dt>
+<dd>
+<p>
+Add sources for the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src" class="ulink" target="_top">Content Security Policy <code class="literal">style-src</code> directive</a>.
+</p>
+<p>Options: <code class="literal">option7</code>, <code class="literal">option8</code>, <code class="literal">option9</code></p>
+<p>Default: <code class="literal">some-fake-value</code></p>
+<p>Platforms: <code class="literal">Self-managed</code>, <code class="literal">Elastic Cloud</code></p>
+<p>Type: dynamic</p>
+</dd>
+<dt>
+<span class="term">
+<code class="literal">csp.connect_src</code>
+</span>
+</dt>
+<dd>
+<p>
+Add sources for the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/connect-src" class="ulink" target="_top">Content Security Policy <code class="literal">connect-src</code> directive</a>.
+</p>
+<p>Options: <code class="literal">option7</code>, <code class="literal">option8</code>, <code class="literal">option9</code></p>
+<p>Default: <code class="literal">some-other-fake-value</code></p>
+<p>Platforms: <code class="literal">Self-managed</code></p>
+<p>Type: dynamic</p>
+</dd>
+<dt>
+<span class="term">
+<code class="literal">csp.default_src</code>
+</span>
+</dt>
+<dd>
+<p>
+Add sources for the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/default-src" class="ulink" target="_top">Content Security Policy <code class="literal">default-src</code> directive</a>.
+</p>
+<p>Options: <code class="literal">option7</code>, <code class="literal">option8</code>, <code class="literal">option9</code></p>
+<p>Default: <code class="literal">toast</code></p>
+<p>Platforms: <code class="literal">Self-managed</code>, <code class="literal">Elastic serverless</code></p>
+<p>Type: dynamic</p>
+</dd>
+<dt>
+<span class="term">
+<code class="literal">csp.font_src</code>
+</span>
+</dt>
+<dd>
+<p>
+Add sources for the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/font-src" class="ulink" target="_top">Content Security Policy <code class="literal">font-src</code> directive</a>.
+</p>
+<p>Default: <code class="literal">strudles</code></p>
+<p>Platforms: <code class="literal">Self-managed</code>, <code class="literal">Elastic serverless</code></p>
+<p>Type: dynamic</p>
+</dd>
+<dt>
+<span class="term">
+<code class="literal">csp.frame_src</code>
+</span>
+</dt>
+<dd>
+<p>
+Add sources for the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-src" class="ulink" target="_top">Content Security Policy <code class="literal">frame-src</code> directive</a>.
+</p>
+<p>Options: <code class="literal">option7</code>, <code class="literal">option8</code>, <code class="literal">option9</code></p>
+<p>Default: <code class="literal">tacos</code></p>
+<p>Platforms: <code class="literal">Elastic Cloud</code>, <code class="literal">Elastic serverless</code></p>
+<p>Type: dynamic</p>
+</dd>
+<dt>
+<span class="term">
+<code class="literal">csp.img_src</code>
+</span>
+</dt>
+<dd>
+<p>
+Add sources for the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/img-src" class="ulink" target="_top">Content Security Policy <code class="literal">img-src</code> directive</a>.
+</p>
+<p>Options: <code class="literal">option7</code>, <code class="literal">option8</code>, <code class="literal">option9</code></p>
+<p>Platforms: <code class="literal">Self-managed</code>, <code class="literal">Elastic serverless</code></p>
+<p>Type: dynamic</p>
+</dd>
+<dt>
+<span class="term">
+<code class="literal">csp.frame_ancestors</code>
+</span>
+</dt>
+<dd>
+<p>
+Add sources for the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors" class="ulink" target="_top">Content Security Policy <code class="literal">frame-ancestors</code> directive</a>.
+</p>
+<p>Options: <code class="literal">option7</code>, <code class="literal">option8</code>, <code class="literal">option9</code></p>
+<p>Platforms: <code class="literal">Self-managed</code>, <code class="literal">Elastic Cloud</code></p>
+<p>Type: dynamic</p>
+<div class="note admon">
+<div class="icon"></div>
+<div class="admon_content">
+<p>The <code class="literal">frame-ancestors</code> directive can also be configured by using <a class="xref" href="settings.html#server-securityResponseHeaders-disableEmbedding"><code class="literal">server.securityResponseHeaders.disableEmbedding</code></a>. In that case, that takes precedence and any values in <code class="literal">csp.frame_ancestors</code> are ignored.</p>
+</div>
+</div>
+</dd>
+<dt>
+<span class="term">
+<a id="elasticsearch-ssl-alwaysPresentCertificate"></a> <code class="literal">elasticsearch.ssl.alwaysPresentCertificate</code>
+</span>
+</dt>
+<dd>
+<p>
+Controls Kibana behavior in regard to presenting a client certificate when requested by Elasticsearch. This setting applies to all outbound SSL/TLS connections to Elasticsearch, including requests that are proxied for end users.
+</p>
+<p>Options: <code class="literal">option7</code>, <code class="literal">option8</code>, <code class="literal">option9</code></p>
+<p>Default: <code class="literal">false</code></p>
+<p>Platforms: <code class="literal">Self-managed</code>, <code class="literal">Elastic serverless</code></p>
+<p>Type: static</p>
+<div class="warning admon">
+<div class="icon"></div>
+<div class="admon_content">
+<p>When Elasticsearch uses certificates to authenticate end users with a PKI realm and <a class="xref" href="settings.html#elasticsearch-ssl-alwaysPresentCertificate"><code class="literal">elasticsearch.ssl.alwaysPresentCertificate</code></a> is <code class="literal">true</code>, proxied requests may be executed as the identity that is tied to the Kibana server.</p>
+</div>
+</div>
+</dd>
+<dt>
+<span class="term">
+<a id="elasticsearch-ssl-keystore-path"></a> <code class="literal">elasticsearch.ssl.keystore.path</code>
+</span>
+</dt>
+<dd>
+<p>
+Path to a PKCS#12 keystore that contains an X.509 client certificate and it&#8217;s corresponding private key. These are used by Kibana to authenticate itself when making outbound SSL/TLS connections to Elasticsearch. For this setting, you must also set the <code class="literal">xpack.security.http.ssl.client_authentication</code> setting in Elasticsearch to <code class="literal">required</code> or <code class="literal">optional</code> to request a client certificate from Kibana.
+</p>
+<p>If the keystore contains any additional certificates, they are used as a trusted certificate chain for Elasticsearch. This chain is used by Kibana to establish trust when making outbound SSL/TLS connections to Elasticsearch. In addition to this setting, trusted certificates may be specified via <a class="xref" href="settings.html#elasticsearch-ssl-certificateAuthorities"><code class="literal">elasticsearch.ssl.certificateAuthorities</code></a> and/or <a class="xref" href="settings.html#elasticsearch-ssl-truststore-path"><code class="literal">elasticsearch.ssl.truststore.path</code></a>.</p>
+<div class="note admon">
+<div class="icon"></div>
+<div class="admon_content">
+<p>This setting cannot be used in conjunction with <a class="xref" href="settings.html#elasticsearch-ssl-cert-key"><code class="literal">elasticsearch.ssl.certificate</code></a> or <a class="xref" href="settings.html#elasticsearch-ssl-cert-key"><code class="literal">elasticsearch.ssl.key</code></a>.</p>
+</div>
+</div>
+</dd>
+<dt>
+<span class="term">
+<a id="elasticsearch-idleSocketTimeout"></a> <code class="literal">elasticsearch.idleSocketTimeout</code>
+</span>
+</dt>
+<dd>
+<p>
+The timeout for idle sockets kept open between Kibana and Elasticsearch. If the socket is idle for longer than this timeout, it will be closed. If you have a transparent proxy between Kibana and Elasticsearch be sure to set this value lower than or equal to the proxy&#8217;s timeout.
+</p>
+<p>Default: <code class="literal">60s</code></p>
+</dd>
+<dt>
+<span class="term">
+<code class="literal">elasticsearch.customHeaders</code>
+</span>
+</dt>
+<dd>
+<p>
+Header names and values to send to Elasticsearch. Any custom headers cannot be overwritten by client-side headers, regardless of the <a class="xref" href="settings.html#elasticsearch-requestHeadersWhitelist"><code class="literal">elasticsearch.requestHeadersWhitelist</code></a> configuration.
+</p>
+<p>Default: <code class="literal">{}</code></p>
+</dd>
+<dt>
+<span class="term">
+<a id="elasticsearch-requestHeadersWhitelist"></a> <code class="literal">elasticsearch.requestHeadersWhitelist</code>
+</span>
+</dt>
+<dd>
+<p>
+List of Kibana client-side headers to send to Elasticsearch. To send <span class="strong strong"><strong>no</strong></span> client-side headers, set this value to [] (an empty list). Removing the <code class="literal">authorization</code> header from being whitelisted means that you cannot use <a class="xref" href="kibana-authentication.html#basic-authentication" title="Basic authentication">basic authentication</a> in Kibana.
+</p>
+<p>Default: <code class="literal">[ 'authorization', 'es-client-authentication' ]</code></p>
+</dd>
+<dt>
+<span class="term">
+<a id="logging-root-level"></a> <code class="literal">logging.root.level</code>
+</span>
+</dt>
+<dd>
+<p>
+Level at which a log record should be logged. Supported levels are: <em>all</em>, <em>fatal</em>, <em>error</em>, <em>warn</em>, <em>info</em>, <em>debug</em>, <em>trace</em>, <em>off</em>. Levels are ordered from <em>all</em> (highest) to <em>off</em> and a log record will be logged it its level is higher than or equal to the level of its logger, otherwise the log record is ignored. Use this value to <a class="xref" href="log-settings-examples.html#change-overall-log-level" title="Change overall log level">change the overall log level</a>.
+</p>
+<p>Options: <code class="literal">all</code>, <code class="literal">fatal</code>, <code class="literal">error</code>, <code class="literal">warn</code>, <code class="literal">info</code>, <code class="literal">trace</code>, <code class="literal">off</code></p>
+<p>Default: <code class="literal">info</code></p>
+<p>Platforms: <code class="literal">Self-managed</code>, <code class="literal">Elastic Cloud</code>, <code class="literal">Elastic serverless</code></p>
+<p>Type: static</p>
+<div class="tip admon">
+<div class="icon"></div>
+<div class="admon_content">
+<p>Set to <code class="literal">all</code> to log all events, including system usage information and all requests. Set to <code class="literal">off</code> to silence all logs.  You can also use the logging <a class="xref" href="_cli_configuration.html#logging-cli-migration" title="Logging configuration via CLI">cli commands</a> to set log level to <code class="literal">verbose</code> or silence all logs.</p>
+</div>
+</div>
+<p>The following example shows a valid verbose <code class="literal">logging.root</code> configuration:</p>
+<div class="pre_wrapper lang-text">
+<div class="console_code_copy" title="Copy to clipboard"></div>
+<pre class="programlisting prettyprint lang-text">logging:
+  appenders:
+    console_appender:
+      type: console
+      layout:
+        type: pattern
+        highlight: true
+  root:
+    appenders: [console_appender]
+    level: all</pre>
+</div>
+</dd>
+</dl>
+</div>
+<p><a id="csp-strict"></a>  a
+<a id="elasticsearch-maxSockets"></a> a
+<a id="elasticsearch-maxResponseSize"></a> a
+<a id="elasticsearch-maxIdleSockets"></a> a
+<a id="elasticsearch-hosts"></a>  a
+<a id="elasticsearch-pingTimeout"></a> a
+<a id="elasticsearch-requestTimeout"></a> a
+<a id="elasticsearch-ssl-cert-key"></a> a
+<a id="elasticsearch-ssl-certificateAuthorities"></a> a
+<a id="elasticsearch-ssl-truststore-path"></a> a
+<a id="elasticsearch-ssl-verificationMode"></a> a
+<a id="elasticsearch-user-passwd"></a> a
+<a id="elasticsearch-service-account-token"></a> a
+<a id="logging-root"></a> a
+<a id="logging-root-appenders"></a> a
+<a id="logging-loggers"></a> a
+<a id="tilemap-settings"></a> a
+<a id="tilemap-max-zoom"></a>  a
+<a id="tilemap-min-zoom"></a> a
+<a id="tilemap-subdomains"></a> a
+<a id="tilemap-url"></a> a
+<a id="path-data"></a> a
+<a id="ops-cGroupOverrides-cpuPath"></a> a
+<a id="ops-cGroupOverrides-cpuAcctPath"></a> a
+<a id="savedObjects-maxImportExportSize"></a> a
+<a id="savedObjects-maxImportPayloadBytes"></a> a
+<a id="server-basePath"></a> a
+<a id="server-publicBaseUrl"></a> a
+<a id="server-compression"></a> a
+<a id="server-securityResponseHeaders-strictTransportSecurity"></a> a
+<a id="server-securityResponseHeaders-xContentTypeOptions"></a> a
+<a id="server-securityResponseHeaders-referrerPolicy"></a> a
+<a id="server-securityResponseHeaders-permissionsPolicyReportOnly"></a> a
+<a id="server-securityResponseHeaders-disableEmbedding"></a> a
+<a id="server-securityResponseHeaders-crossOriginOpenerPolicy"></a> a
+<a id="server-shutdownTimeout"></a> a
+<a id="server-host"></a> a
+<a id="server-maxPayload"></a> a
+<a id="server-port"></a> a
+<a id="server-requestId-allowFromAnyIp"></a> a
+<a id="server-rewriteBasePath"></a> a
+<a id="server-socketTimeout"></a> a
+<a id="server-payloadTimeout"></a> a
+<a id="server-ssl-cert-key"></a> a
+<a id="server-ssl-certificateAuthorities"></a> a
+<a id="server-ssl-cipherSuites"></a> a
+<a id="server-ssl-enabled"></a> a
+<a id="server-ssl-keystore-path"></a> a
+<a id="server-ssl-truststore-path"></a> a
+<a id="server-ssl-supportedProtocols"></a> a
+<a id="server-uuid"></a> a
+<a id="settings-xsrf-allowlist"></a> a
+<a id="settings-xsrf-disableProtection"></a> a
+<a id="telemetry-allowChangingOptInStatus"></a> a
+<a id="settings-telemetry-optIn"></a> a
+<a id="settings-explore-data-in-context"></a> a
+<a id="settings-explore-data-in-chart"></a> a</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+</div>
+</div><div class="navfooter">
+<span class="prev">
+<a href="docker.html">« Install Kibana with Docker</a>
+</span>
+<span class="next">
+<a href="alert-action-settings-kb.html">Alerting and action settings in Kibana »</a>
+</span>
+</div>
+</body>
+</html>
